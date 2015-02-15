@@ -1,0 +1,6 @@
+"AddonInfo"
+{
+	"name" "Creeps"
+	"author_name" "Nautical"
+	"info" "A creepy creeper creep"
+}
