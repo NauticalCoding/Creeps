@@ -5,17 +5,21 @@
 	
 	Forces a client to endure popup scares, hallucinations and other distortions of game world.
 	
-	All code is clientside
+	All this code is clientside
 	
 	Made by Nautical
 */
 
-if ( CREEPS == nil ) then // include config file if it hasn't been loaded
-
-	include( "config.lua" )
-end
-
 // Local vars
+
+local config = { // default configuration, this can be overridden by the server via the net library
+		
+	allowEvents					= 0, // Enables / disables events
+	timerDelay 					= 10, // Delay in between blinks and event attempts
+	maximumBrightness			= 60, // Maximum environment brightness in which an event can take place
+	debugMode					= 1, // enables debug printing
+	eventChance					= 25, // 0% - 100% chance of event occuring
+}
 
 local events = {} // each table in here will be an "event", events are selected randomly
 local selectedEvent; // currently selected event ( events[ selectedEvent ] )
@@ -23,10 +27,21 @@ local lastEvent = 0 // most recently run event, used to prevent an event from ru
 
 local monsterModels = {
 
-	"models/elite_synth/elite_synth.mdl",
 	"models/gman_high.mdl",
 	"models/stalker.mdl",
 }
+
+// Net receive
+
+net.Receive( "CREEPS_CONFIG_BROADCAST",function(len)
+
+	config = net.ReadTable()
+end )
+
+net.Receive("CREEPS_PRIVATE_MESSAGE",function(len)
+
+	chat.AddText(Color(255,0,0,255),"[CREEPS] ",Color(255,255,255,255),net.ReadString())
+end )
 
 // Global vars
 
@@ -36,7 +51,7 @@ canSee = true
 
 function debugPrint( msg )
 
-	if ( GetConVarNumber( "Creeps_Debug_Mode" ) == 0 ) then return end
+	if ( config.debugMode == 0 ) then return end
 
 	MsgC( Color( 255,0,255,255 ),"[ Creeps ] " .. msg .. "\n" )
 end
@@ -84,7 +99,7 @@ function blink( delay )
 
 	delay = delay || .25
 
-	hook.Add( "HUDPaint","blink",function()
+	hook.Add( "HUDPaint","CREEPS_blink",function()
 	
 		surface.SetDrawColor( Color( 0,0,0,255 ) )
 		surface.DrawRect( 0,0,ScrW(),ScrH() )
@@ -95,7 +110,7 @@ function blink( delay )
 	timer.Simple( delay,function()
 	
 		canSee = true
-		hook.Remove( "HUDPaint","blink" )
+		hook.Remove( "HUDPaint","CREEPS_blink" )
 	end )
 	
 	debugPrint( "blinking" )
@@ -190,9 +205,9 @@ end
 
 local function runEvents() // selects an event, then based on chance and canSee, will attempt to run the selected event
 
+	if ( config.allowEvents == 0 ) then return end // allows toggling events
+	
 	blink( .15 ) // blink for .15 seconds
-
-	if ( GetConVarNumber( "Creeps_Allow_Events" ) == 0 ) then return end // allows toggling events
 	
 	if ( selectedEvent == nil ) then // choose a random event
 		
@@ -212,7 +227,7 @@ local function runEvents() // selects an event, then based on chance and canSee,
 	
 		local chanceToRun = math.random( 1,100 )
 	
-		if ( chanceToRun <= GetConVarNumber( "Creeps_Event_Chance" ) && approxBrightness() < GetConVarNumber( "Creeps_Maximum_Brightness" ) ) then
+		if ( chanceToRun <= config.eventChance && approxBrightness() < config.maximumBrightness ) then
 	
 			events[ selectedEvent ].main()
 			events[ selectedEvent ].started = true
@@ -234,4 +249,4 @@ local function runEvents() // selects an event, then based on chance and canSee,
 	end
 end
 
-timer.Create( "Mother Event Timer",GetConVarNumber( "Creeps_Timer_Delay" ),0,runEvents )
+timer.Create( "Mother Event Timer",config.timerDelay,0,runEvents )

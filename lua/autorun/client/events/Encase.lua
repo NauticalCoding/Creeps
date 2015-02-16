@@ -25,7 +25,7 @@ event.offsets = {
 
 event.sounds = {
 
-	placeWall = "ambient/rottenburg/tunneldoor_closed_loud.wav",
+	placeWall = "physics/metal/metal_box_break1.wav",
 	metalMove = "ambient/materials/metal_rattle.wav",
 	
 	crush = {
