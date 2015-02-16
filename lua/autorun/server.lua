@@ -94,7 +94,7 @@ concommand.Add("Creeps_TargetPlayer",function(ply,cmd,args)
 		timerDelay 					= 10, // Delay in between blinks and event attempts
 		maximumBrightness			= 110, // Maximum environment brightness in which an event can take place
 		debugMode					= 0, // enables debug printing
-		eventChance					= 15, // 0% - 100% chance of event occuring
+		eventChance					= 25, // 0% - 100% chance of event occuring
 	}
 	
 	net.Start("CREEPS_CONFIG_BROADCAST")
@@ -123,7 +123,7 @@ concommand.Add("Creeps_UntargetPlayer",function(ply,cmd,args)
 		timerDelay 					= 10, // Delay in between blinks and event attempts
 		maximumBrightness			= 110, // Maximum environment brightness in which an event can take place
 		debugMode					= 0, // enables debug printing
-		eventChance					= 15, // 0% - 100% chance of event occuring
+		eventChance					= 25, // 0% - 100% chance of event occuring
 	}
 	
 	net.Start("CREEPS_CONFIG_BROADCAST")

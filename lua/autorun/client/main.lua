@@ -213,7 +213,7 @@ local function runEvents() // selects an event, then based on chance and canSee,
 		
 		
 		selectedEvent = lastEvent
-		//selectedEvent = 2
+		selectedEvent = 5
 		
 		while ( selectedEvent == lastEvent ) do
 		

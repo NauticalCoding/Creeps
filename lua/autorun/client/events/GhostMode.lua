@@ -27,48 +27,74 @@ event.sounds = {
 	"creeps/Ambient13.wav",
 }
 
+event.modifiedEnts = {}
+
 // Local methods
 
 function event.setNoRender( bool )
-
-	for k,v in pairs( ents.GetAll() ) do
 	
-		if ( !v:IsValid() ) then continue end
-		if ( v:GetModel() == "models/combine_helicopter/helicopter_bomb01.mdl" ) then 
+	if (bool) then
+	
+		for k,v in pairs( ents.GetAll() ) do
+		
+			if ( !v:IsValid() ) then continue end
+			if ( v:GetModel() == "models/combine_helicopter/helicopter_bomb01.mdl" ) then 
+				
+				continue 
+			end
 			
-			print( v:GetModel() )
-			print( "skipping!" )
-			continue 
-		end
+			if (!quickTrace(LocalPlayer():GetShootPos(),v:GetPos(),{LocalPlayer(),v}).Hit) then
+				if (!table.HasValue(event.modifiedEnts,v)) then
+				
+					if ( v:IsPlayer() ) then
 		
-		if ( v:IsPlayer() ) then
-		
-			if ( bool ) then
-			
-				if ( !v:IsMuted() ) then
-		
-					v:SetMuted( bool )
+						if ( !v:IsMuted() ) then
+						
+							v:SetMuted(true)
+						end
+					end
+					
+					v:SetNoDraw(true)
+					table.insert(event.modifiedEnts,v)
 				end
-			else
+				
+			elseif(table.HasValue(event.modifiedEnts,v)) then
 			
-				v:SetMuted( bool )
+				table.remove(event.modifiedEnts,table.KeyFromValue(event.modifiedEnts,v))
+				v:SetNoDraw(false)
 			end
 		end
+	else
+	
+		for k,v in pairs(event.modifiedEnts) do
+	
+			if (!v:IsValid()) then continue end
+			
+			if (v:IsPlayer()) then
+			
+				if (v:IsMuted()) then
+	
+					v:SetMuted(false)
+				end
+			end
+			
+			v:SetNoDraw(false)
+		end
 		
-		v:SetNoDraw( bool )
+		event.modifiedEnts = {}
 	end
 end
 
 function event.main()
 	
-	timer.Create( "setnorender",1,0,function()
-	
+	timer.Create( "CREEPS_setNoRender",.1,0,function()
+		
 		event.setNoRender( true )
 	end )
 	
 	surface.PlaySound( table.Random( event.sounds ) )
 	
-	hook.Add( "RenderScreenspaceEffects","blacknwhite",function()
+	hook.Add( "RenderScreenspaceEffects","CREEPS_blacknwhite",function()
 	
 		local tab = {}
 		tab[ "$pp_colour_addr" ] = 0
@@ -101,22 +127,12 @@ function event.main()
 	
 	if ( quickTrace( LocalPlayer():GetShootPos(),pos ).Hit ) then
 	
-	
-		pos = ( LocalPlayer() + Vector( 0,0,15 ) ) + eyeAngles:Forward() * 50
+		pos = ( LocalPlayer():GetPos() + Vector( 0,0,15 ) ) + eyeAngles:Forward() * 50
 	end
 	
-	local theta = 0
-	
-	hook.Add( "Think","checkdistance",function()
+	hook.Add( "Think","CREEPS_checkDistance",function()
 		
-		theta = theta + .05
-		
-		if ( theta > 3.1 ) then
-		
-			theta = 0
-		end
-		
-		orb:SetPos( pos + Vector( 0,0,math.sin( theta ) ) * 15 )
+		orb:SetPos( pos + Vector( 0,0,TimedSin( 1, 0, 15, 0 ) ) )
 		
 		if ( LocalPlayer():GetPos():Distance( orb:GetPos() ) < 45 || !LocalPlayer():Alive() ) then
 			
@@ -124,13 +140,13 @@ function event.main()
 			
 			blink()
 			
-			timer.Destroy( "setnorender" )
-			hook.Remove( "RenderScreenspaceEffects","blacknwhite" )
-			hook.Remove( "Think","checkdistance" )
+			timer.Destroy( "CREEPS_setNoRender" )
+			hook.Remove( "RenderScreenspaceEffects","CREEPS_blacknwhite" )
+			hook.Remove( "Think","CREEPS_checkDistance" )
 			RunConsoleCommand( "stopsound" )
 			
-			event.finished = true
 			event.setNoRender( false )
+			event.finished = true
 		end
 	end )
 end
