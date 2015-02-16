@@ -211,9 +211,7 @@ local function runEvents() // selects an event, then based on chance and canSee,
 	
 	if ( selectedEvent == nil ) then // choose a random event
 		
-		
 		selectedEvent = lastEvent
-		//selectedEvent = 2
 		
 		while ( selectedEvent == lastEvent ) do
 		
