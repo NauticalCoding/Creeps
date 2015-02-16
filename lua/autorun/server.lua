@@ -17,7 +17,7 @@ local events = file.Find( "lua/autorun/client/events/*.lua","GAME" )
 for k,v in pairs( events ) do
 	
 	AddCSLuaFile( "client/events/"..v )
-	MsgC( Color( 255,150,150,255 ),"[ Creeps Server ] added file: " .. v .. "\n" )
+	MsgC( Color( 255,150,150,255 ),"[ Creeps Server ] added file: client/events/" .. v .. "\n" )
 end
 
 AddCSLuaFile( "client/main.lua" )
@@ -26,18 +26,15 @@ AddCSLuaFile( "client/main.lua" )
 
 local function addDir( dir )
 
-	local files,directories = file.Find( dir,"GAME" )
+	local files = file.Find( dir,"GAME" )
+	
+	local path = string.gsub(dir,"*","",1)
 
 	for k,v in pairs( files ) do
 	
-		resource.AddFile( dir .. "/" .. v )
+		resource.AddSingleFile( path .. v )
 		
 		MsgC( Color( 255,150,150,255 ),"[ Creeps Server ] added resource: " .. v .. "\n" )
-	end
-	
-	for k,v in pairs( directories ) do
-	
-		addDir( dir .. "/" .. v )
 	end
 end
 
@@ -94,7 +91,7 @@ concommand.Add("Creeps_TargetPlayer",function(ply,cmd,args)
 		timerDelay 					= 10, // Delay in between blinks and event attempts
 		maximumBrightness			= 110, // Maximum environment brightness in which an event can take place
 		debugMode					= 0, // enables debug printing
-		eventChance					= 25, // 0% - 100% chance of event occuring
+		eventChance					= 100, // 0% - 100% chance of event occuring
 	}
 	
 	net.Start("CREEPS_CONFIG_BROADCAST")

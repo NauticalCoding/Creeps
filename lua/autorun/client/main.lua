@@ -151,7 +151,7 @@ end
 
 local function includeEventScripts()
 
-	local files = file.Find( "lua/autorun/client/events/*.lua","GAME" )
+	local files = file.Find( "autorun/client/events/*.lua","LUA" )
 	
 	for k,v in pairs( files ) do
 	
