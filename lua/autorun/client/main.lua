@@ -211,7 +211,9 @@ local function runEvents() // selects an event, then based on chance and canSee,
 	
 	if ( selectedEvent == nil ) then // choose a random event
 		
-		selectedEvent = lastEvent
+		selectedEvent = 2
+		
+		/*selectedEvent = lastEvent
 		
 		while ( selectedEvent == lastEvent ) do
 		
@@ -219,6 +221,7 @@ local function runEvents() // selects an event, then based on chance and canSee,
 			
 			debugPrint( "selecting random event!" )
 		end
+		*/
 	end
 	
 	if ( !events[ selectedEvent ].started ) then

@@ -6,7 +6,7 @@
 	Made by Nautical
 */
 
-// Local vars
+// Event vars
 
 local event = {
 	
@@ -31,7 +31,7 @@ event.sounds = {
 	"creeps/Ambient13.wav",
 }
 
-// Local methods
+// Event methods
 
 function event.switchModels( bool ) // true = change all player models to gman ( lol ), false = change them back
 

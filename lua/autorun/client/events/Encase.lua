@@ -6,7 +6,7 @@
 	Made by Nautical
 */
 
-// Local vars
+// Event vars
 
 local event = {
 	
@@ -35,7 +35,7 @@ event.sounds = {
 	}
 }
 
-// Local methods
+// Event methods
 
 function event.main()
 	

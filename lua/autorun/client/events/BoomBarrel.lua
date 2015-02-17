@@ -6,7 +6,7 @@
 	Made by Nautical
 */
 
-// Local vars
+// Event vars
 
 local event = {
 	
@@ -15,7 +15,7 @@ local event = {
 	finished = false,
 }
 
-// Local methods
+// Event methods
 
 function event.explodeBarrel( barrel )
 

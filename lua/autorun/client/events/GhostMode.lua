@@ -6,7 +6,7 @@
 	Made by Nautical
 */
 
-// Local vars
+// Event vars
 
 local event = {
 	
@@ -29,7 +29,7 @@ event.sounds = {
 
 event.modifiedEnts = {}
 
-// Local methods
+// Event methods
 
 function event.setNoRender( bool )
 	

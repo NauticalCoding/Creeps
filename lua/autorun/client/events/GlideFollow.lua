@@ -6,7 +6,7 @@
 	Made by Nautical
 */
 
-// Local vars
+// Event vars
 
 local event = {
 	

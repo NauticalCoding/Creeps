@@ -6,7 +6,7 @@
 	Made by Nautical
 */
 
-// Local vars
+// Event vars
 
 local event = {
 	
@@ -24,7 +24,7 @@ event.sounds = {
 	"creeps/Horror15.wav",
 }
 
-// Local methods
+// Event methods
 
 function event.main()
 
