@@ -12,33 +12,36 @@ if ( CLIENT ) then return end
 
 // Lua
 
-local events = file.Find( "lua/autorun/client/events/*.lua","GAME" )
+local function addLua( dir )
+
+	local files = file.Find( "lua/autorun/client/events/" .. dir .. "/*.lua","GAME" )
+
+	for k,v in pairs( files ) do
 	
-for k,v in pairs( events ) do
-	
-	AddCSLuaFile( "client/events/"..v )
-	MsgC( Color( 255,150,150,255 ),"[ Creeps Server ] added file: client/events/" .. v .. "\n" )
+		AddCSLuaFile("client/events/" .. dir .. "/" .. v)
+		MsgC( Color( 255,150,150,255 ),"[ Creeps Server ] added lua file: " .. v .. "\n" )
+	end
 end
 
+addLua("active")
+addLua("passive")
 AddCSLuaFile( "client/main.lua" )
 
 // Resources
 
 local function addDir( dir )
 
-	local files = file.Find( dir,"GAME" )
-	
-	local path = string.gsub(dir,"*","",1)
+	local files = file.Find( dir .. "/*","GAME" )
 
 	for k,v in pairs( files ) do
 	
-		resource.AddSingleFile( path .. v )
+		resource.AddSingleFile(  dir .. "/" .. v )
 		
 		MsgC( Color( 255,150,150,255 ),"[ Creeps Server ] added resource: " .. v .. "\n" )
 	end
 end
 
-addDir( "sound/creeps/*" )
+addDir( "sound/creeps" )
 
 // Broadcasting
 
@@ -89,9 +92,10 @@ concommand.Add("Creeps_TargetPlayer",function(ply,cmd,args)
 	
 		allowEvents					= 1, // Enables / disables events
 		timerDelay 					= 10, // Delay in between blinks and event attempts
-		maximumBrightness			= 110, // Maximum environment brightness in which an event can take place
+		maximumBrightness			= 90, // Maximum environment brightness in which an event can take place
 		debugMode					= 0, // enables debug printing
-		eventChance					= 25, // 0% - 100% chance of event occuring
+		activeEventChance			= 15, // 0% - 100% chance of event occuring
+		passiveEventChance 			= 25, // 0% - 100%
 	}
 	
 	net.Start("CREEPS_CONFIG_BROADCAST")
@@ -118,9 +122,10 @@ concommand.Add("Creeps_UntargetPlayer",function(ply,cmd,args)
 	
 		allowEvents					= 0, // Enables / disables events
 		timerDelay 					= 10, // Delay in between blinks and event attempts
-		maximumBrightness			= 110, // Maximum environment brightness in which an event can take place
+		maximumBrightness			= 90, // Maximum environment brightness in which an event can take place
 		debugMode					= 0, // enables debug printing
-		eventChance					= 25, // 0% - 100% chance of event occuring
+		activeEventChance			= 25, // 0% - 100% chance of event occuring
+		passiveEventChance 			= 15, // 0% - 100%
 	}
 	
 	net.Start("CREEPS_CONFIG_BROADCAST")

@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Encase",
+	type = "active",
 	started = false,
 	finished = false,
 }

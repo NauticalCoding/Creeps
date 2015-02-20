@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Ghost mode",
+	type = "active",
 	started = false,
 	finished = false,
 }

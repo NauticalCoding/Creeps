@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Stalker",
+	type = "active",
 	started = false,
 	finished = false,
 }
@@ -24,13 +25,11 @@ event.sounds = {
 		"vo/npc/female01/behindyou02.wav",
 		"vo/npc/male01/behindyou01.wav",
 		"vo/npc/male01/behindyou02.wav",
-		"vo/monster_misc/monster_riseshine.wav",
 	},
 	
 	scare = {
 		
-		"creeps/Horror14.wav",
-		"ambient/voices/squeal1.wav",
+		"creeps/Horror10.wav",
 		"creeps/Horror15.wav",
 		"creeps/Horror11.wav",
 	},

@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Boom Barrel",
+	type = "active",
 	started = false,
 	finished = false,
 }

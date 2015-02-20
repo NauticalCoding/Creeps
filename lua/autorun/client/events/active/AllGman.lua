@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "All Gman",
+	type = "active",
 	started = false,
 	finished = false,
 }

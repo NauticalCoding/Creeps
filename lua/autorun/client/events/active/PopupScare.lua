@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Popup scare",
+	type = "active",
 	started = false,
 	finished = false,
 }
@@ -22,6 +23,7 @@ event.sounds = {
 	"creeps/Horror7.wav",
 	"creeps/Horror10.wav",
 	"creeps/Horror15.wav",
+	"creeps/Horror11.wav",
 }
 
 // Event methods

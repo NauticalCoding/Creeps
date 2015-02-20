@@ -9,6 +9,7 @@
 local event = {
 
 	name = "BabyDrop",
+	type = "active",
 	started = false,
 	finished = false,
 }
@@ -46,7 +47,11 @@ function event.main()
 				
 				baby:EmitSound("creeps/children.wav",60,100,1,CHAN_VOICE)
 				timer.Create("CREEPS_babyDropSoundEmit",9.1,0,function()
-					baby:EmitSound("creeps/children.wav",60,100,1,CHAN_VOICE)
+					
+					if (baby:GetPos():Distance(LocalPlayer():GetPos()) < 1000) then
+				
+						baby:EmitSound("creeps/children.wav",60,100,1,CHAN_VOICE)
+					end
 				end)
 				
 				babyPlaced = true
@@ -77,6 +82,7 @@ function event.main()
 			
 				surface.PlaySound(table.Random(event.sounds))
 				babyHitGround = true
+				blink()
 				monster:SetPos(LocalPlayer():GetPos() + quickAngles():Forward() * 150)
 				baby:Remove()
 			end
@@ -84,7 +90,7 @@ function event.main()
 		
 		if(babyHitGround) then
 		
-			local angleToMe = ( ( LocalPlayer():GetPos() + LocalPlayer():GetVelocity() / 2 )  - monster:GetPos() ):Angle()
+			local angleToMe = ( LocalPlayer():GetPos()  - monster:GetPos() ):Angle()
 	
 			monster:SetAngles( angleToMe )
 			monster:SetPos(monster:GetPos() + angleToMe:Forward() * 15)

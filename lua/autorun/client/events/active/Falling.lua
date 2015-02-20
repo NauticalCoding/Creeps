@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Falling",
+	type = "active",
 	started = false,
 	finished = false,
 }

@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Glide Follow",
+	type = "active",
 	started = false,
 	finished = false,
 }
@@ -35,6 +36,7 @@ event.sounds = {
 		"creeps/Horror7.wav",
 		"creeps/Horror10.wav",
 		"creeps/Horror15.wav",
+		"creeps/Horror11.wav",
 	}
 
 }

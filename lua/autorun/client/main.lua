@@ -16,14 +16,22 @@ local config = { // default configuration, this can be overridden by the server 
 		
 	allowEvents					= 0, // Enables / disables events
 	timerDelay 					= 10, // Delay in between blinks and event attempts
-	maximumBrightness			= 60, // Maximum environment brightness in which an event can take place
+	maximumBrightness			= 90, // Maximum environment brightness in which an event can take place
 	debugMode					= 1, // enables debug printing
-	eventChance					= 25, // 0% - 100% chance of event occuring
+	activeEventChance			= 25, // 0% - 100% chance of event occuring
+	passiveEventChance			= 75, // 0% - 100%
 }
 
-local events = {} // each table in here will be an "event", events are selected randomly
-local selectedEvent; // currently selected event ( events[ selectedEvent ] )
-local lastEvent = 0 // most recently run event, used to prevent an event from running twice in a row
+local events = { // each table in here will be an "event", events are selected randomly
+	
+	active = {},
+	passive = {},
+}
+
+local selectedActiveEvent; // currently selected event ( events[ selectedActiveEvent ] )
+local lastActiveEvent = 0 // most recently run event, used to prevent an event from running twice in a row
+local selectedPassiveEvent;
+local lastPassiveEvent = 0
 
 local monsterModels = {
 
@@ -57,10 +65,19 @@ function debugPrint( msg )
 end
 
 function addEvent( eventTable )
-
-	events[ #events + 1 ] = eventTable
 	
-	debugPrint( "added event " .. eventTable.name )
+	if (eventTable == nil) then return end
+	if (eventTable.type == nil) then return end
+	
+	if (string.lower(eventTable.type) == "active") then
+	
+		events.active[ table.Count(events.active) + 1 ] = eventTable
+	elseif(string.lower(eventTable.type) == "passive") then
+	
+		events.passive[ table.Count(events.passive) + 1 ] = eventTable
+	end
+	
+	debugPrint( "	->Successfully added event " .. eventTable.name )
 end	
 
 function inFOV( pos ) 
@@ -98,6 +115,7 @@ function blink( delay )
 	if ( !canSee ) then return end
 
 	delay = delay || .25
+	
 
 	hook.Add( "HUDPaint","CREEPS_blink",function()
 	
@@ -147,23 +165,7 @@ function fakeDeath()
 	surface.PlaySound( "creeps/player_death.wav" )
 end
 
-// Local methods
-
-local function includeEventScripts()
-
-	local files = file.Find( "autorun/client/events/*.lua","LUA" )
-	
-	for k,v in pairs( files ) do
-	
-		include( "events/"..v )
-	end
-	
-	debugPrint( "Loaded event scripts" )
-end
-
-includeEventScripts()
-
-local function approxBrightness()
+function approxBrightness()
 
 	render.CapturePixels()
 	
@@ -198,56 +200,121 @@ local function approxBrightness()
 	
 	local approx = ( avgColor.r + avgColor.g + avgColor.b ) / 3
 	
-	debugPrint( "calculating brightness " .. approx )
+	debugPrint( "Approximate brightness: " .. approx )
 	
 	return approx
 end
 
-local function runEvents() // selects an event, then based on chance and canSee, will attempt to run the selected event
+// Local methods
+
+local function includeScripts(subDir)
+
+	local files = file.Find( "autorun/client/events/" .. subDir .. "/*.lua","LUA" )
+	
+	for k,v in pairs( files ) do
+	
+		debugPrint("Attempting to include script: events/" .. subDir .. "/"..v)
+		include( "events/" .. subDir .. "/"..v )
+	end
+end
+
+includeScripts("passive")
+includeScripts("active")
+
+/* Active event shit */
+
+local function runActiveEvents() // selects an event, then based on chance and canSee, will attempt to run the selected event
 
 	if ( config.allowEvents == 0 ) then return end // allows toggling events
 	
 	blink( .15 ) // blink for .15 seconds
 	
-	if ( selectedEvent == nil ) then // choose a random event
+	if ( selectedActiveEvent == nil ) then // choose a random event
 		
-		selectedEvent = 2
+		//selectedActiveEvent = 2
 		
-		/*selectedEvent = lastEvent
+		selectedActiveEvent = lastActiveEvent
 		
-		while ( selectedEvent == lastEvent ) do
+		while ( selectedActiveEvent == lastActiveEvent ) do
 		
-			selectedEvent = math.random( 1,#events )
+			selectedActiveEvent = math.random( 1,table.Count(events.active) )
 			
-			debugPrint( "selecting random event!" )
+			debugPrint( "Selecting event " .. events.active[ selectedActiveEvent ].name )
 		end
-		*/
 	end
 	
-	if ( !events[ selectedEvent ].started ) then
+	if ( !events.active[ selectedActiveEvent ].started ) then
 	
 		local chanceToRun = math.random( 1,100 )
 	
-		if ( chanceToRun <= config.eventChance && approxBrightness() < config.maximumBrightness ) then
+		if ( chanceToRun <= config.activeEventChance && approxBrightness() < config.maximumBrightness ) then
 	
-			events[ selectedEvent ].main()
-			events[ selectedEvent ].started = true
+			events.active[ selectedActiveEvent ].main()
+			events.active[ selectedActiveEvent ].started = true
 			
-			debugPrint( "starting event: " .. events[ selectedEvent ].name )
+			debugPrint( "starting event: " .. events.active[ selectedActiveEvent ].name )
 		end
 	end
 	
-	if ( events[ selectedEvent ].finished ) then
+	if ( events.active[ selectedActiveEvent ].finished ) then
 			
-		events[ selectedEvent ].started = false // reset the started/finished variables
-		events[ selectedEvent ].finished = false
+		events.active[ selectedActiveEvent ].started = false // reset the started/finished variables
+		events.active[ selectedActiveEvent ].finished = false
 			
-		lastEvent = selectedEvent
+		lastActiveEvent = selectedActiveEvent
 			
-		debugPrint( "finished event: " .. events[ selectedEvent ].name )
+		debugPrint( "Finished event: " .. events.active[ selectedActiveEvent ].name )
 			
-		selectedEvent = nil // set selectedEvent back to nil, so the first if statement will be called next time
+		selectedActiveEvent = nil // set selectedActiveEvent back to nil, so the first if statement will be called next time
 	end
 end
 
-timer.Create( "Mother Event Timer",config.timerDelay,0,runEvents )
+timer.Create( "CREEPS_activeEventTimer",config.timerDelay,0,runActiveEvents )
+
+/* Passive event shit */
+
+local function runPassiveEvents()
+
+	if ( config.allowEvents == 0 ) then return end // allows toggling events
+
+	if ( selectedPassiveEvent == nil ) then // choose a random event
+		
+		//selectedPassiveEvent = 2
+		
+		selectedPassiveEvent = lastPassiveEvent
+		
+		while ( selectedPassiveEvent == lastPassiveEvent ) do
+		
+			selectedPassiveEvent = math.random( 1,table.Count(events.passive) )
+			
+			debugPrint( "Selecting event " .. events.passive[ selectedPassiveEvent ].name )
+		end
+	end
+	
+	if ( !events.passive[ selectedPassiveEvent ].started ) then
+	
+		local chanceToRun = math.random( 1,100 )
+	
+		if ( chanceToRun <= config.passiveEventChance ) then
+	
+			events.passive[ selectedPassiveEvent ].main()
+			events.passive[ selectedPassiveEvent ].started = true
+			
+			debugPrint( "starting event: " .. events.passive[ selectedPassiveEvent ].name )
+		end
+	end
+	
+	if ( events.passive[ selectedPassiveEvent ].finished ) then
+			
+		events.passive[ selectedPassiveEvent ].started = false // reset the started/finished variables
+		events.passive[ selectedPassiveEvent ].finished = false
+			
+		lastPassiveEvent = selectedPassiveEvent
+			
+		debugPrint( "Finished event: " .. events.passive[ selectedPassiveEvent ].name )
+			
+		selectedPassiveEvent = nil // set selectedPassiveEvent back to nil, so the first if statement will be called next time
+	end
+end
+
+timer.Create("CREEPS_passiveEventTimer",config.timerDelay / 2,0,runPassiveEvents)

@@ -11,6 +11,7 @@
 local event = {
 	
 	name = "Framed Approach",
+	type = "active",
 	started = false,
 	finished = false,
 }
@@ -33,6 +34,7 @@ event.sounds = {
 		"creeps/Horror4.wav",
 		"creeps/Horror7.wav",
 		"creeps/Horror10.wav",
+		"creeps/Horror11.wav",
 		"creeps/Horror15.wav",
 		"ambient/rottenburg/tunneldoor_closed_loud.wav",
 		"ambient/rottenburg/tunneldoor_closed_quiet.wav",
