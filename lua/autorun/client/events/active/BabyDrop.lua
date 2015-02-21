@@ -33,7 +33,7 @@ function event.main()
 	local babyDrop = false
 	local babyHitGround = false
 	
-	local infront = ( LocalPlayer():GetPos() + quickAngles():Forward() * 300 )
+	local infront = ( LocalPlayer():GetPos() + quickAngles():Forward() * 500 )
 	
 	timer.Create("CREEPS_babyDrop",.01,0,function()
 

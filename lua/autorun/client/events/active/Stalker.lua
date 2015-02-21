@@ -72,14 +72,12 @@ function event.main()
 			local angToFace = ( ( monster:GetPos() + Vector( 0,0,67 ) ) - LocalPlayer():GetShootPos() ):Angle()
 			LocalPlayer():SetEyeAngles( angToFace )
 			
-			hook.Remove( "Think","moveClientModel" )
-			timer.Destroy( "randSoundTimer" )
-			RunConsoleCommand( "stopsound" )
-			
 			timer.Simple( .15,function() 
 
 				surface.PlaySound( table.Random( event.sounds.scare ) )
-				blink()
+				
+				hook.Remove( "Think","moveClientModel" )
+				timer.Destroy( "randSoundTimer" )
 				monster:Remove()
 				event.finished = true
 			end )

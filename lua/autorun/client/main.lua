@@ -12,14 +12,17 @@
 
 // Local vars
 
+local render = table.Copy( render )
+
 local config = { // default configuration, this can be overridden by the server via the net library
 		
 	allowEvents					= 0, // Enables / disables events
 	timerDelay 					= 10, // Delay in between blinks and event attempts
-	maximumBrightness			= 90, // Maximum environment brightness in which an event can take place
+	prefBrightness				= 90, // Preferred environment brightness in which an event can take place
 	debugMode					= 1, // enables debug printing
 	activeEventChance			= 25, // 0% - 100% chance of event occuring
 	passiveEventChance			= 75, // 0% - 100%
+	blinkSpeed 					= 35, // how fast the eyes blink, larger number = slower blink and vice versa
 }
 
 local events = { // each table in here will be an "event", events are selected randomly
@@ -53,7 +56,8 @@ end )
 
 // Global vars
 
-canSee = true
+canBlink = true
+eyesClosed = false
 
 // Global methods
 
@@ -61,7 +65,7 @@ function debugPrint( msg )
 
 	if ( config.debugMode == 0 ) then return end
 
-	MsgC( Color( 255,0,255,255 ),"[ Creeps ] " .. msg .. "\n" )
+	MsgC( Color( 255,150,0,255 ),"[ Creeps ] " .. msg .. "\n" )
 end
 
 function addEvent( eventTable )
@@ -86,7 +90,7 @@ function inFOV( pos )
 	ang.p = math.abs( math.NormalizeAngle( ang.p ) )
 	ang.y = math.abs( math.NormalizeAngle( ang.y ) )
 	
-	if ( ang.y > 75 || ang.p > 40 || !canSee ) then
+	if ( ang.y > 75 || ang.p > 40 || eyesClosed ) then
 		
 		return false
 		
@@ -110,25 +114,69 @@ function quickTrace( pos1,pos2,filter )
 	return util.TraceLine( tr )
 end
 
-function blink( delay )
+function blink(delay)
 
-	if ( !canSee ) then return end
-
-	delay = delay || .25
+	if ( !canBlink ) then return end
 	
+	delay = delay || 0
+	canBlink = false
+	
+	local eyelidW = ScrW()
+	local eyelidH = ScrH()
+	
+	local desiredY = ScrH() / 2
+		
+	local eyelidUpper = -eyelidH // this is the y coordinate of the upper eyelid
+	local eyelidLower = ScrH()
 
 	hook.Add( "HUDPaint","CREEPS_blink",function()
 	
-		surface.SetDrawColor( Color( 0,0,0,255 ) )
-		surface.DrawRect( 0,0,ScrW(),ScrH() )
+		// move eyelids
 		
-		canSee = false
-	end )
+		if (!eyesClosed) then
+		
+			local yDiff = eyelidLower - desiredY
+		
+			if ( ( yDiff <= 0 ) && delay != -1 ) then
+				
+				if (delay > 0) then
+				
+					timer.Simple(delay,function()
+					
+						eyesClosed = true
+					end)
+				else
+				
+					eyesClosed = true
+				end
+				
+				delay = -1
+			
+			elseif ( eyelidUpper < desiredY && eyelidLower > desiredY) then
+				eyelidUpper = eyelidUpper + (eyelidH / config.blinkSpeed) // x calls to this method then the eyelids are fully closed
+				eyelidLower = eyelidLower - (eyelidH / config.blinkSpeed)
+			end
+			
+		else
+		
+		
+			if (eyelidUpper == -eyelidH || eyelidLower == ScrH()) then
+			
+				eyesClosed = false
+				canBlink = true
+				hook.Remove( "HUDPaint","CREEPS_blink" )
+			
+			elseif ( eyelidUpper > -eyelidH || eyelidLower > ScrH() ) then
+				
+				eyelidUpper = eyelidUpper - (eyelidH / config.blinkSpeed) // x calls to this method then the eyelids are fully opened
+				eyelidLower = eyelidLower + (eyelidH / config.blinkSpeed)
+			end
+		end
 	
-	timer.Simple( delay,function()
 	
-		canSee = true
-		hook.Remove( "HUDPaint","CREEPS_blink" )
+		surface.SetDrawColor( Color( 0,0,0,255 ) )
+		surface.DrawRect( 0,eyelidUpper,eyelidW,eyelidH )
+		surface.DrawRect( 0,eyelidLower,eyelidW,eyelidH)
 	end )
 	
 	debugPrint( "blinking" )
@@ -223,15 +271,13 @@ includeScripts("active")
 
 /* Active event shit */
 
-local function runActiveEvents() // selects an event, then based on chance and canSee, will attempt to run the selected event
+local function runActiveEvents() // selects an event, then based on chance and canBlink, will attempt to run the selected event
 
 	if ( config.allowEvents == 0 ) then return end // allows toggling events
 	
-	blink( .15 ) // blink for .15 seconds
-	
 	if ( selectedActiveEvent == nil ) then // choose a random event
 		
-		//selectedActiveEvent = 2
+		//selectedActiveEvent = 9
 		
 		selectedActiveEvent = lastActiveEvent
 		
@@ -245,9 +291,10 @@ local function runActiveEvents() // selects an event, then based on chance and c
 	
 	if ( !events.active[ selectedActiveEvent ].started ) then
 	
-		local chanceToRun = math.random( 1,100 )
+		local chance = math.random(1,100)
+		local chanceMultiplier = ( approxBrightness() / config.prefBrightness )
 	
-		if ( chanceToRun <= config.activeEventChance && approxBrightness() < config.maximumBrightness ) then
+		if ( chance * chanceMultiplier <= config.activeEventChance ) then
 	
 			events.active[ selectedActiveEvent ].main()
 			events.active[ selectedActiveEvent ].started = true
@@ -267,6 +314,8 @@ local function runActiveEvents() // selects an event, then based on chance and c
 			
 		selectedActiveEvent = nil // set selectedActiveEvent back to nil, so the first if statement will be called next time
 	end
+	
+	blink()
 end
 
 timer.Create( "CREEPS_activeEventTimer",config.timerDelay,0,runActiveEvents )
@@ -279,7 +328,7 @@ local function runPassiveEvents()
 
 	if ( selectedPassiveEvent == nil ) then // choose a random event
 		
-		//selectedPassiveEvent = 2
+		//selectedPassiveEvent = 9
 		
 		selectedPassiveEvent = lastPassiveEvent
 		

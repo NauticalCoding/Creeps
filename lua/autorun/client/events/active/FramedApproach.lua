@@ -20,8 +20,8 @@ event.sounds = {
 
 	ambience = {
 	
-		"ambient/atmosphere/cave_hit4.wav",
-		"ambient/atmosphere/cave_hit5.wav",
+		"creeps/Ambient5.wav",
+		"creeps/Ambient17.wav",
 		"ambient/atmosphere/cave_hit6.wav",
 	},
 
@@ -36,22 +36,20 @@ event.sounds = {
 		"creeps/Horror10.wav",
 		"creeps/Horror11.wav",
 		"creeps/Horror15.wav",
-		"ambient/rottenburg/tunneldoor_closed_loud.wav",
-		"ambient/rottenburg/tunneldoor_closed_quiet.wav",
 	},
 }
 
 // Event methods
 
-function event.placemonster( monster,distance )
+function event.placemonster( monster,distance,ignoreLOS )
 	
 	local eyeAngles = quickAngles() 
 	
-	local pos = LocalPlayer():GetPos() + ( LocalPlayer():GetVelocity() / 2 ) + eyeAngles:Forward() * distance
+	local pos = LocalPlayer():GetShootPos() + eyeAngles:Forward() * distance
 	
-	local collisionTrace = quickTrace( LocalPlayer():GetShootPos() + Vector( 0,0,40 ),pos + Vector( 0,0,40 ),{ LocalPlayer() } )
+	local collisionTrace = quickTrace( LocalPlayer():GetShootPos(),pos,{ LocalPlayer() } )
 	
-	if ( !collisionTrace.Hit ) then
+	if ( ignoreLOS || ( !collisionTrace.Hit && eyesClosed ) ) then
 		
 		local surfaceTrace = quickTrace( pos + Vector( 0,0,80 ),pos - Vector( 0,0,9999 ) )
 		
@@ -63,7 +61,6 @@ function event.placemonster( monster,distance )
 		monster:SetAngles( angleToMe )
 		
 		surface.PlaySound( event.sounds.monsterMove )
-		blink()
 		
 		return true
 		
@@ -81,18 +78,18 @@ function event.main()
 	
 	local distance = 1530
 	
-	timer.Create( "reposition monster",.4,0,function()
+	timer.Create( "reposition monster",.1,0,function()
 	
-		local canMovemonster = event.placemonster( monster,distance - 500 )
+		local canMovemonster = event.placemonster( monster,distance - 500,false )
 	
 		if ( canMovemonster ) then
 		
-			distance = distance - 500
+			distance = distance - 250
 		end
 	
-		if ( distance == 30 ) then
+		if ( LocalPlayer():GetPos():Distance(monster:GetPos()) < 200 ) then
 		
-			blink()
+			event.placemonster( monster,50,true )
 			
 			timer.Destroy( "reposition monster" )
 			surface.PlaySound( table.Random( event.sounds.scare ) )

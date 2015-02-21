@@ -17,25 +17,20 @@ local event = {
 function event.main()
 	
 	if (approxBrightness() < 75 && LocalPlayer():FlashlightIsOn()) then
-	
-		local runs = 0
 
-		timer.Create("CREEPS_flickerFlashlight",.15,10,function()
+		for i = 1,10 do
 	
-	
-			local delay = math.random(1,10) / 10
+			local offset = math.random(1,10) / 10
 		
-			timer.Simple(delay,function()
+			timer.Simple( ( i / 10 ) + offset,function()
 				RunConsoleCommand("impulse","100")
 			end)
 		
-			runs = runs + 1
-			
-			if (runs == 10) then
+			if (i == 10) then
 			
 				event.finished = true
 			end
-		end)
+		end
 	else
 	
 		event.finished = true

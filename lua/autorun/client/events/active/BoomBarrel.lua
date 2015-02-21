@@ -45,7 +45,7 @@ function event.main()
 		
 			local collisionTrace = quickTrace( LocalPlayer():GetPos() + Vector( 0,0,40 ),pos + Vector( 0,0,40 ) )
 			
-			if ( !collisionTrace.Hit && !canSee ) then
+			if ( !collisionTrace.Hit && canBlink ) then
 				
 				local surfaceTrace = quickTrace( pos + Vector( 0,0,80 ),pos - Vector( 0,0,9999 ) )
 				
